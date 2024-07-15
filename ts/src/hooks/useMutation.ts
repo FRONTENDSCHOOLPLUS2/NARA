@@ -85,9 +85,12 @@ const useMutation = (url: string, options: UseMutationOptions = {}) => {
 
     try {
       const response = await fetch(url, finalOptions);
+
       if (!response.ok) {
-        throw new Error(`2xx 이외의 응답: ${response.status}`);
+        const err = await response.json();
+        throw new Error(err.message || `2xx 이외의 응답: ${response.status}`);
       }
+
       const result: T = await response.json();
       return result;
     } catch (err) {
