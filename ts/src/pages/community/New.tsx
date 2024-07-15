@@ -4,45 +4,67 @@ import Submit from "@components/Submit";
 import useMutation from "@hooks/useMutation";
 import { userState } from "@recoil/user/atoms";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 
 function New() {
   const { send } = useMutation("/posts");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [titleError, setTitleError] = useState("");
+  const [contentError, setContentError] = useState("");
   const navigate = useNavigate();
   const [user] = useRecoilState(userState);
   const token = user?.token?.accessToken;
+  const { type } = useParams();
 
-  console.log(title, content);
-  console.log(user);
-  console.log(token);
-
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleRegister = async () => {
     try {
+      const boardData: {
+        title: string;
+        content: string;
+        type?: string;
+      } = { title, content };
+
+      if (type === "cadepend") {
+        boardData.type = "cadepend";
+      }
+
       const result: NewBoardItemRespons = await send({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          type: "cadepend",
-          title,
-          content,
-        }),
+        body: JSON.stringify(boardData),
       });
+
       console.log(result);
-      navigate(`/cadepend/${result.item._id}`);
+      navigate(`/${type}/${result.item._id}`);
     } catch (err) {
       if (err instanceof TypeError) {
         alert(err.message);
       } else if (err instanceof Error) {
         alert(err.message);
       }
+    }
+  };
+
+  const handleValidation = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      setTitleError("내용을 입력해주시기 바랍니다.");
+    } else {
+      setTitleError("");
+    }
+    if (!content.trim()) {
+      setContentError("내용을 입력해주시기 바랍니다.");
+    } else {
+      setContentError("");
+    }
+    if (title.trim() && content.trim()) {
+      handleRegister();
     }
   };
 
@@ -54,7 +76,7 @@ function New() {
         </h2>
       </div>
       <section className="mb-8 p-4">
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleValidation}>
           <div className="my-4">
             <label className="block text-lg content-center" htmlFor="title">
               제목
@@ -69,7 +91,9 @@ function New() {
               onChange={(e) => setTitle(e.target.value)}
             />
             {/* 입력값 검증 에러 출력 */}
-            {/* <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">에러 메세지</p> */}
+            <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">
+              {titleError}
+            </p>
           </div>
           <div className="my-4">
             <label className="block text-lg content-center" htmlFor="content">
@@ -85,7 +109,9 @@ function New() {
               onChange={(e) => setContent(e.target.value)}
             ></textarea>
             {/* 입력값 검증 에러 출력 */}
-            {/* <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">에러 메세지</p> */}
+            <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">
+              {contentError}
+            </p>
           </div>
           <hr />
           <div className="flex justify-end my-6">

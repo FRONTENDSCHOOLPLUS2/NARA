@@ -16,7 +16,7 @@ const UserDefault: ILogin = {
   password: "11111111",
 };
 
-// FIXME: 왜 언컨트롤드 인풋이 뜰까ㅠ
+// MEMO: 왜 언컨트롤드 인풋이 뜰까ㅠ
 function Login() {
   const { send } = useMutation("/users/login", { skipToken: true });
   // const [email, setEmail] = useState(UserDefault.email);
@@ -46,6 +46,7 @@ function Login() {
         }),
       });
       console.log(res);
+
       const tokenExpirationTime = Date.now() + 24 * 60 * 60 * 1000;
 
       setUser({
@@ -79,17 +80,30 @@ function Login() {
     const emailValue = target.email.value;
     const passwordValue = target.password.value;
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    let isValid = true;
+
     if (!emailValue.trim()) {
-      setEmailError("내용을 입력해주시기 바랍니다.");
+      setEmailError("이메일을 입력해주시기 바랍니다.");
+      isValid = false;
+    } else if (!emailRegex.test(emailValue)) {
+      setEmailError("적합하지 않은 이메일 형식입니다.");
     } else {
       setEmailError("");
     }
+
     if (!passwordValue.trim()) {
-      setPasswordError("내용을 입력해주시기 바랍니다.");
+      setPasswordError("비밀번호를 입력해주시기 바랍니다.");
+      isValid = false;
+    } else if (passwordValue.length < 8) {
+      setPasswordError("비밀번호는 8자리 이상 입력해주시기 바랍니다.");
+      isValid = false;
     } else {
       setPasswordError("");
     }
-    if (email.trim() && password.trim()) {
+
+    if (isValid) {
       handleLogin();
     }
   };

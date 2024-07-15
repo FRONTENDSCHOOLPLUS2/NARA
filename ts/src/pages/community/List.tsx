@@ -35,7 +35,7 @@ function List() {
       }`;
 
   // 데이터 명시
-  const { data, loading, refetch } = useFetch<BoardListData>(boardUrl);
+  const { data, loading, error, refetch } = useFetch<BoardListData>(boardUrl);
   console.log(data);
 
   useEffect(() => {
@@ -51,8 +51,7 @@ function List() {
     setCurrentPage(newPage);
   };
 
-  // MEMO: 스피너로 바꾸자!!
-  if (loading) return <Spinner />;
+  // if (loading) return <Spinner />;
   // if (error) return <p>{error.message}</p>;
 
   const boardList = data?.item.map((item) => (
@@ -118,13 +117,13 @@ function List() {
               )}
             </tr>
             {/* 에러 메세지 출력 */}
-            {/* <tr>
+            <tr>
               {error && (
                 <td colSpan={6} className="py-20 text-center">
-                  {error.message}
+                  {error instanceof Error ? error.message : error}
                 </td>
               )}
-            </tr> */}
+            </tr>
             {/* 본문 출력 */}
             {boardList}
           </tbody>

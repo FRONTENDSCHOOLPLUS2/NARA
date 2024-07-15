@@ -3,24 +3,23 @@ import Submit from "@components/Submit";
 import useMutation from "@hooks/useMutation";
 import { userState } from "@recoil/user/atoms";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 
 function Edit() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user] = useRecoilState(userState);
-  const token = user?.token?.accessToken;
   const [title, setTitle] = useState(location.state?.postDetailTitle);
   const [content, setContent] = useState(location.state?.postDetailContent);
+  const [titleError, setTitleError] = useState("");
+  const [contentError, setContentError] = useState("");
+  const token = user?.token?.accessToken;
   const _id = location.state?._id;
   const { send } = useMutation(`/posts/${_id}`);
+  const { type } = useParams();
 
-  console.log(_id);
-
-  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const handleEdit = async () => {
     try {
       const result = await send({
         method: "PATCH",
@@ -31,13 +30,31 @@ function Edit() {
         body: JSON.stringify({ title, content }),
       });
       console.log(result);
-      navigate(`/cadepend/${_id}`);
+      navigate(`/${type}/${_id}`);
     } catch (err) {
       if (err instanceof TypeError) {
         alert(err.message);
       } else if (err instanceof Error) {
         alert(err.message);
       }
+    }
+  };
+
+  const handleValidation = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      setTitleError("내용을 입력해주시기 바랍니다.");
+    } else {
+      setTitleError("");
+    }
+    if (!content.trim()) {
+      setContentError("내용을 입력해주시기 바랍니다.");
+    } else {
+      setContentError("");
+    }
+    if (title.trim() && content.trim()) {
+      handleEdit();
     }
   };
 
@@ -50,7 +67,7 @@ function Edit() {
         </h2>
       </div>
       <section className="mb-8 p-4">
-        <form onSubmit={handleEdit}>
+        <form onSubmit={handleValidation}>
           <div className="my-4">
             <label className="block text-lg content-center" htmlFor="title">
               제목
@@ -64,7 +81,9 @@ function Edit() {
               onChange={(e) => setTitle(e.target.value)}
             />
             {/* 입력값 검증 에러 출력 */}
-            {/* <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">에러 메세지</p> */}
+            <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">
+              {titleError}
+            </p>
           </div>
           <div className="my-4">
             <label className="block text-lg content-center" htmlFor="content">
@@ -79,7 +98,9 @@ function Edit() {
               onChange={(e) => setContent(e.target.value)}
             ></textarea>
             {/* 입력값 검증 에러 출력 */}
-            {/* <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">에러 메세지</p> */}
+            <p className="ml-2 mt-1 text-sm text-red-500 dark:text-red-400">
+              {contentError}
+            </p>
           </div>
           <hr />
           <div className="flex justify-end my-6">

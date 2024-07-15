@@ -13,6 +13,7 @@ function CommentNew({ refetch }: commentNewProps) {
   const { _id } = useParams();
   const { send } = useMutation(`/posts/${_id}/replies`);
   const [content, setContent] = useState("");
+  const [error, setError] = useState("");
   const [user] = useRecoilState(userState);
   const token = user?.token?.accessToken;
 
@@ -32,12 +33,22 @@ function CommentNew({ refetch }: commentNewProps) {
       });
       console.log(result);
       refetch();
+      setContent("");
     } catch (err) {
       if (err instanceof TypeError) {
         alert(err.message);
       } else if (err instanceof Error) {
         alert(err.message);
       }
+    }
+  };
+
+  const handleValidation = () => {
+    if (!content.trim()) {
+      setError("내용을 입력해주시기 바랍니다.");
+    } else {
+      setError("");
+      handleAddReply();
     }
   };
 
@@ -60,15 +71,12 @@ function CommentNew({ refetch }: commentNewProps) {
               ></textarea>
 
               {/* 에러 메세지 출력 */}
-              {/*
-      <p className="ml-2 mt-1 text-sm text-red-500">
-        에러 메세지
-      </p>
-      */}
+
+              <p className="ml-2 mt-1 text-sm text-red-500">{error}</p>
             </div>
             <Button
               className="bg-orange-500 py-1 px-4 text-sm text-white font-semibold ml-2 hover:bg-amber-400 rounded"
-              onClick={handleAddReply}
+              onClick={handleValidation}
             >
               댓글 등록
             </Button>
@@ -81,22 +89,11 @@ function CommentNew({ refetch }: commentNewProps) {
                 cols={40}
                 className="block p-2 w-full text-sm border rounded-lg border-gray-300 bg-gray-50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                 placeholder="로그인 후 댓글 작성 가능합니다."
-                name="comment"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
                 disabled
               ></textarea>
-
-              {/* 에러 메세지 출력 */}
-              {/*
-      <p className="ml-2 mt-1 text-sm text-red-500">
-        에러 메세지
-      </p>
-      */}
             </div>
             <Button
               className="bg-gray-600 py-1 px-4 text-sm text-white font-semibold ml-2 rounded"
-              onClick={handleAddReply}
               disabled
             >
               댓글 등록

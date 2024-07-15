@@ -1,5 +1,4 @@
 import { BoardItemResponse } from "#types/board";
-import { ErrorResponse } from "#types/error";
 import Button from "@components/Button";
 import useFetch from "@hooks/useFetch";
 import useMutation from "@hooks/useMutation";
@@ -27,18 +26,13 @@ function Detail() {
 
   const handleDelete = async () => {
     try {
-      const result = await send<ErrorResponse>({
+      const result = await send({
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (result.ok === 0) {
-        alert(result.message);
-        return;
-      }
 
       console.log(result);
       alert("삭제되었습니다.");
